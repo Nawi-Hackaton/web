@@ -228,6 +228,17 @@
         { id: "human", label: ts(s, "Hablar con una persona", "Runawan rimay"), synonyms: ["persona", "humano", "runa"] },
       ]),
 
+    // Lista directa de trámites: al elegir "Consultar requisitos" mostramos de una vez todos
+    // los trámites disponibles para que el ciudadano elija uno y vea sus requisitos.
+    "req-list": (s) => nawi(s,
+      ts(s, "Estos son los trámites sobre los que te puedo dar los requisitos. Elige uno para ver qué necesitas.",
+        "Kaykunamantam munasqakunata niykiman. Hukninta akllay, imata munasqaykita qhawanaykipaq."),
+      PROCEDURES.map((p) => ({ id: p.id, label: getProcedureName(p, s.language), synonyms: (p.synonyms || []).concat([p.name.toLowerCase()]) }))
+        .concat([
+          { id: "describe", label: ts(s, "No está en la lista / describirlo", "Manam listapichu / willaykuy"), synonyms: ["no esta", "otro", "describir"] },
+          { id: "menu", label: ts(s, "Volver al menú", "Menuman kutiy") },
+        ])),
+
     "req-ask": (s) => nawi(s,
       ts(s, "Dime qué necesitas hacer, aunque no sepas el nombre exacto del trámite. Por ejemplo: necesito una constancia, quiero presentar un documento, o quiero hacer una solicitud.",
         "Imata ruwanayta munasqaykita niway, ruraypa sutinta mana yachaspa hinapas. Kay hina niwaq: constanciata munani, qillqata haywayta munani, utaq solicitudta ruwani."),
@@ -841,7 +852,7 @@
         return pushNawi(Object.assign({}, s2, { flowOrigin: "onboarding" }), "privacy");
       }
       case "menu":
-        if (optionId === "req") return pushNawi(Object.assign({}, state, { flowOrigin: undefined, collected: {} }), "req-ask");
+        if (optionId === "req") return pushNawi(Object.assign({}, state, { flowOrigin: undefined, collected: {} }), "req-list");
         if (optionId === "start") {
           // La identidad ya se validó en el onboarding: vamos directo a elegir la dependencia
           // (formulario real de la Mesa de Partes Virtual: dependencia → tipo de documento).
@@ -862,6 +873,12 @@
       case "status-real-anio":
         if (/^\d{4}$/.test(optionId)) {
           return pushNawi(Object.assign({}, state, { collected: Object.assign({}, state.collected, { estadoAnio: parseInt(optionId, 10) }) }), "status-real-result");
+        }
+        break;
+      case "req-list":
+        if (optionId === "describe") return pushNawi(state, "req-ask");
+        if (PROCEDURES.find((p) => p.id === optionId)) {
+          return pushNawi(Object.assign({}, state, { collected: Object.assign({}, state.collected, { procedureId: optionId }) }), "req-result");
         }
         break;
       case "req-ask":
@@ -933,7 +950,7 @@
         } else {
           if (optionId === "yes") return pushNawi(state, "show-requirements");
           if (optionId === "other") return pushNawi(state, "choose-procedure");
-          if (optionId === "reqs") return pushNawi(state, "req-ask");
+          if (optionId === "reqs") return pushNawi(state, "req-list");
           if (PROCEDURES.find((p) => p.id === optionId)) return pushNawi(Object.assign({}, state, { collected: Object.assign({}, state.collected, { procedureId: optionId }) }), "show-requirements");
           if (optionId === "no-se") return pushNawi(state, "req-category");
         }
@@ -1100,7 +1117,7 @@
       return pushNawi(Object.assign({}, s, { flowOrigin: undefined, collected: Object.assign({}, s.collected, { procedureId: pid }) }), "req-result");
     }
     if (/requisito|que necesito|que piden|que documentos|documentos para/.test(t)) {
-      return pushNawi(Object.assign({}, s, { flowOrigin: undefined, collected: {} }), "req-ask");
+      return pushNawi(Object.assign({}, s, { flowOrigin: undefined, collected: {} }), "req-list");
     }
     if (/estado|como va|seguimiento|expediente|mi tramite/.test(t)) {
       if (s.channel === "web") return pushNawi(Object.assign({}, s, { flowOrigin: "status", collected: {} }), "status-real-exp");

@@ -57,6 +57,7 @@
   // estático y no lee el .env: cuando tengan el número real, cámbialo AQUÍ.
   const WHATSAPP_NUMBER = "51963169033";
   let currentAudio = null;     // <audio> activo cuando se usa el TTS del backend (ElevenLabs)
+  let playSeq = 0;             // token de cancelación: invalida audios pendientes al detener/reemplazar
   let backendTtsDown = false;  // si el backend falla una vez, no se reintenta en la sesión
   let ttsAudio = null;         // ÚNICO elemento <audio> reutilizado (se desbloquea con un gesto)
   let audioPrimed = false;     // true una vez que el navegador permite reproducir audio
@@ -96,6 +97,12 @@
   function playText(text, onEnd) {
     // TODOS los mensajes (incluido el primero) intentan ElevenLabs por el backend; si el
     // backend falla o no está disponible, se cae a Web Speech API.
+    // `seq` es un token de cancelación: cada llamada invalida la anterior. Si el usuario
+    // detiene la voz o llega otro mensaje, los callbacks de la reproducción anterior quedan
+    // "obsoletos" (seq !== playSeq) y se ignoran, en vez de re-leer el texto viejo o de
+    // desactivar el backend de voz por una interrupción (que no es un fallo real).
+    const seq = ++playSeq;
+    if (currentAudio) { try { currentAudio.pause(); } catch (e) {} } // calla de inmediato lo que sonaba
     if (backendTtsDown) { webSpeak(text, onEnd); return; }
     fetch(BACKEND_URL + "/api/tts", {
       method: "POST",
@@ -104,19 +111,23 @@
     })
       .then((r) => { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
       .then((j) => {
+        if (seq !== playSeq) return; // llegó tarde: el usuario ya detuvo o pidió otro audio
         // Reutilizamos el MISMO elemento ya desbloqueado por primeAudio() para que el
         // navegador no bloquee la reproducción automática.
         if (!ttsAudio) ttsAudio = new Audio();
         const audio = ttsAudio;
         audio.src = "data:" + (j.mime || "audio/ogg") + ";base64," + j.audio_base64;
         currentAudio = audio;
-        audio.onplay = () => { isSpeaking = true; updateTyping(); };
-        audio.onended = () => { isSpeaking = false; currentAudio = null; updateTyping(); if (onEnd) onEnd(); };
-        audio.onerror = () => { isSpeaking = false; currentAudio = null; updateTyping(); backendTtsDown = true; webSpeak(text, onEnd); };
+        audio.onplay = () => { if (seq === playSeq) { isSpeaking = true; updateTyping(); } };
+        audio.onended = () => { if (seq !== playSeq) return; isSpeaking = false; currentAudio = null; updateTyping(); if (onEnd) onEnd(); };
+        // Solo tratamos el error como fallo real si este audio sigue siendo el vigente; si fue
+        // interrumpido (seq obsoleto) lo ignoramos: ni leemos el texto viejo ni marcamos el
+        // backend como caído.
+        audio.onerror = () => { if (seq !== playSeq) return; isSpeaking = false; currentAudio = null; updateTyping(); backendTtsDown = true; webSpeak(text, onEnd); };
         const pr = audio.play();
-        if (pr && pr.catch) pr.catch(() => { isSpeaking = false; currentAudio = null; backendTtsDown = true; webSpeak(text, onEnd); });
+        if (pr && pr.catch) pr.catch(() => { if (seq !== playSeq) return; isSpeaking = false; currentAudio = null; backendTtsDown = true; webSpeak(text, onEnd); });
       })
-      .catch(() => { backendTtsDown = true; webSpeak(text, onEnd); });
+      .catch(() => { if (seq !== playSeq) return; backendTtsDown = true; webSpeak(text, onEnd); });
   }
 
   function pauseSpeak() {
@@ -128,6 +139,7 @@
     else { try { window.speechSynthesis.resume(); } catch (e) {} }
   }
   function stopSpeak() {
+    playSeq++; // invalida cualquier audio pendiente o en curso (su fetch/onerror se ignorará)
     if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
     try { window.speechSynthesis.cancel(); } catch (e) {}
     isSpeaking = false; updateTyping();
