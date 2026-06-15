@@ -1,0 +1,243 @@
+/* =========================================================
+   Ñawi — Widget de chat accesible (paleta del prototipo, hex)
+   WCAG 2.2 AA: contraste >=4.5:1, foco 3px #0057B7, botones >=44px
+   ========================================================= */
+
+:root {
+  --nw-primary: #7b1320;
+  --nw-primary-2: #5c0e18;
+  --nw-bg: #f8f3ec;
+  --nw-fg: #1f1f1f;
+  --nw-muted: #4a4a4a;
+  --nw-earth: #a56a43;
+  --nw-focus: #0057b7;
+  --nw-audio: #2d5a1b;     /* verde */
+  --nw-info: #007c89;      /* turquesa */
+  --nw-warning: #b85c00;
+  --nw-danger: #b00020;
+  --nw-card: #ffffff;
+  --nw-border: #c9b8a6;
+  --nw-secondary: #ede4d8;
+}
+
+/* ---------------- Botón flotante + menú de contacto ---------------- */
+.nw-fab-wrap { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 1500;
+  display: flex; flex-direction: column; align-items: flex-end; gap: .6rem; }
+
+.nw-fab { display: inline-flex; align-items: center; gap: .5rem; min-height: 56px;
+  padding: .75rem 1.25rem; font-size: 1.05rem; font-weight: 700; color: #fff;
+  background: var(--nw-primary); border: 2px solid #fff; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: pointer; }
+.nw-fab:hover { background: var(--nw-primary-2); }
+.nw-fab svg { width: 22px; height: 22px; }
+
+.nw-contact { display: flex; flex-direction: column; gap: .4rem; background: #fff;
+  border: 2px solid var(--nw-border); border-radius: 10px; padding: .5rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+.nw-contact[hidden] { display: none; }
+.nw-contact button { display: flex; align-items: center; gap: .5rem; min-height: 44px;
+  padding: .5rem 1rem; font-size: 1.05rem; font-weight: 600; background: transparent;
+  color: var(--nw-fg); border: 2px solid transparent; border-radius: 8px; cursor: pointer; text-align: left; }
+.nw-contact button:hover { background: var(--nw-secondary); border-color: var(--nw-border); }
+
+/* ---------------- Panel del widget (diálogo) ---------------- */
+.nw-panel { position: fixed; right: 1.25rem; bottom: 1.25rem; width: 420px; height: 620px;
+  max-height: 90vh; display: flex; flex-direction: column; background: var(--nw-bg);
+  border: 2px solid var(--nw-primary); border-radius: 14px; overflow: hidden; z-index: 1600;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); font-size: 17px; }
+.nw-panel[hidden] { display: none; }
+
+.nw-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+  background: var(--nw-primary); color: #fff; padding: .7rem 1rem; }
+.nw-head .nw-id { display: flex; align-items: center; gap: .5rem; }
+.nw-head .nw-mark { display: grid; place-items: center; width: 34px; height: 34px;
+  background: #fff; color: var(--nw-primary); border-radius: 999px; }
+.nw-head .nw-mark svg { width: 20px; height: 20px; }
+.nw-title { font-weight: 700; line-height: 1.1; }
+.nw-sub { font-size: .8rem; opacity: .9; }
+.nw-head-actions { display: flex; gap: .25rem; }
+.nw-iconbtn { display: grid; place-items: center; min-width: 44px; min-height: 44px;
+  background: transparent; color: #fff; border: 2px solid transparent; border-radius: 8px; cursor: pointer; }
+.nw-iconbtn:hover { background: rgba(255,255,255,.18); }
+.nw-iconbtn svg { width: 20px; height: 20px; }
+
+/* ---------------- Mensajes ---------------- */
+.nw-msgs { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .85rem; }
+
+.nw-row { display: flex; gap: .6rem; align-items: flex-start; }
+.nw-row.user { justify-content: flex-end; }
+.nw-avatar { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px;
+  background: var(--nw-primary); color: #fff; border-radius: 999px; margin-top: 2px; }
+.nw-avatar svg { width: 18px; height: 18px; }
+
+.nw-bubble { max-width: 85%; padding: .7rem .9rem; border-radius: 14px; line-height: 1.5; }
+.nw-bubble.nawi { background: var(--nw-card); border: 1px solid var(--nw-border); border-top-left-radius: 4px; }
+.nw-bubble.user { background: var(--nw-primary); color: #fff; border-bottom-right-radius: 4px; }
+.nw-bubble p { margin: 0; white-space: pre-line; }
+
+.nw-options { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
+.nw-opt { min-height: 44px; display: inline-flex; align-items: center; gap: .4rem;
+  padding: .5rem .85rem; font-size: .95rem; font-weight: 600; border: 2px solid var(--nw-border);
+  border-radius: 10px; background: #fff; color: var(--nw-fg); cursor: pointer; }
+.nw-opt:hover { background: var(--nw-secondary); }
+.nw-opt.primary { background: var(--nw-primary); color: #fff; border-color: var(--nw-primary); }
+.nw-opt.primary:hover { background: var(--nw-primary-2); }
+.nw-opt.danger { background: #fff; color: var(--nw-danger); border-color: var(--nw-danger); }
+.nw-opt.success { background: var(--nw-audio); color: #fff; border-color: var(--nw-audio); }
+
+.nw-audiobar { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .6rem;
+  border-top: 1px solid var(--nw-border); padding-top: .5rem; }
+.nw-audiobtn { min-height: 44px; display: inline-flex; align-items: center; gap: .3rem;
+  padding: .35rem .6rem; font-size: .85rem; font-weight: 600; background: transparent;
+  border: 1px solid var(--nw-border); border-radius: 8px; color: var(--nw-muted); cursor: pointer; }
+.nw-audiobtn:hover { background: var(--nw-secondary); color: var(--nw-fg); }
+.nw-audiobtn svg { width: 16px; height: 16px; }
+
+/* ---------------- Tarjetas (InlineCard) ---------------- */
+.nw-card { margin-top: .7rem; background: var(--nw-card); border: 1px solid var(--nw-border);
+  border-radius: 12px; padding: .9rem; }
+.nw-card h4 { margin: 0 0 .25rem; font-size: 1.05rem; }
+.nw-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-muted); }
+.nw-card ol { margin: .5rem 0 .6rem 1.1rem; }
+.nw-card li { margin-bottom: .25rem; }
+.nw-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; font-size: .9rem; color: var(--nw-muted); }
+.nw-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .55rem;
+  border-radius: 999px; font-size: .8rem; font-weight: 700; border: 1px solid var(--nw-border); }
+.nw-chip.recibido { color: var(--nw-info); border-color: var(--nw-info); background: rgba(0,124,137,.08); }
+.nw-chip.revision { color: var(--nw-warning); border-color: var(--nw-warning); background: rgba(184,92,0,.08); }
+.nw-chip.observado { color: var(--nw-danger); border-color: var(--nw-danger); background: rgba(176,0,32,.08); }
+.nw-chip.aprobado { color: var(--nw-audio); border-color: var(--nw-audio); background: rgba(45,90,27,.08); }
+.nw-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin: .5rem 0 0; font-size: .9rem; }
+.nw-card dt { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: var(--nw-muted); }
+.nw-card dd { margin: 0; }
+.nw-card .full { grid-column: 1 / -1; }
+.nw-receipt-head { background: var(--nw-primary); color: #fff; margin: -.9rem -.9rem .6rem; padding: .9rem; }
+.nw-receipt-num { font-size: 1.4rem; font-weight: 800; }
+.nw-card.notif { border-left: 4px solid var(--nw-info); }
+.nw-simtag { display: inline-flex; align-items: center; gap: .4rem; margin-top: .6rem;
+  padding: .2rem .5rem; border-radius: 6px; font-size: .75rem; font-weight: 700;
+  color: var(--nw-warning); background: rgba(184,92,0,.1); }
+.nw-simtag::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--nw-warning); }
+
+/* ---------------- Barra de entrada ---------------- */
+.nw-typing { display: inline-flex; align-items: center; gap: .25rem; font-size: .8rem; color: var(--nw-muted); }
+.nw-typing[hidden] { display: none; }
+.nw-typing .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--nw-primary); animation: nw-typing 1.4s ease-in-out infinite; }
+.nw-typing .dot:nth-child(2) { animation-delay: .15s; }
+.nw-typing .dot:nth-child(3) { animation-delay: .3s; }
+
+.nw-inputbar { border-top: 1px solid var(--nw-border); background: var(--nw-card); padding: .6rem; }
+.nw-inputrow { display: flex; align-items: flex-end; gap: .4rem; }
+.nw-circlebtn { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 999px;
+  border: 2px solid var(--nw-border); background: #fff; color: var(--nw-fg); cursor: pointer; }
+.nw-circlebtn:hover { background: var(--nw-secondary); }
+.nw-circlebtn.send { background: var(--nw-primary); color: #fff; border-color: var(--nw-primary); }
+.nw-circlebtn.send:hover { background: var(--nw-primary-2); }
+.nw-circlebtn.listening { background: var(--nw-audio); color: #fff; border-color: var(--nw-audio); }
+.nw-circlebtn svg { width: 20px; height: 20px; }
+.nw-circlebtn:disabled { opacity: .4; cursor: not-allowed; }
+.nw-input { flex: 1; min-height: 44px; resize: none; padding: .55rem .8rem; font-size: 1rem;
+  border: 2px solid var(--nw-border); border-radius: 12px; font-family: inherit; }
+.nw-quick { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .5rem; }
+.nw-quick button { min-height: 32px; padding: .25rem .6rem; font-size: .78rem; font-weight: 600;
+  border: 1px solid var(--nw-border); border-radius: 999px; background: var(--nw-secondary);
+  color: var(--nw-muted); cursor: pointer; }
+.nw-quick button:hover { background: var(--nw-border); color: var(--nw-fg); }
+
+/* Indicador de estado de voz (PROBLEMA 3) */
+.nw-voicestatus { flex: 1; font-size: .95rem; font-weight: 700; color: var(--nw-audio); padding: 0 .4rem; }
+.nw-voicestatus[hidden] { display: none; }
+/* Botón para cancelar el modo voz y volver a escribir (PROBLEMA 4) */
+.nw-voicecancel { display: inline-flex; align-items: center; gap: .3rem; min-height: 44px;
+  padding: .4rem .7rem; font-size: .9rem; font-weight: 600; color: var(--nw-danger);
+  background: #fff; border: 2px solid var(--nw-danger); border-radius: 999px; cursor: pointer; }
+.nw-voicecancel svg { width: 16px; height: 16px; }
+.nw-voicecancel:hover { background: rgba(176,0,32,.08); }
+/* Micrófono como INDICADOR animado (no botón) cuando voiceMode está activo */
+.nw-circlebtn.indicator { border-color: var(--nw-audio); color: var(--nw-audio);
+  background: rgba(45,90,27,.08); cursor: default; animation: nw-pulse 1.6s ease-in-out infinite; }
+.nw-circlebtn.indicator:hover { background: rgba(45,90,27,.08); }
+.nw-circlebtn.listening { animation: nw-pulse 1.6s ease-in-out infinite; }
+/* Aviso (p. ej. micrófono no disponible) */
+.nw-notice { align-self: center; max-width: 92%; text-align: center; font-size: .9rem; font-weight: 600;
+  color: var(--nw-warning); background: rgba(184,92,0,.1); border: 1px solid var(--nw-warning);
+  border-radius: 8px; padding: .5rem .75rem; }
+
+/* Respuesta real del RAG (documentos oficiales del GORE) */
+.nw-rag { align-self: flex-start; max-width: 92%; background: rgba(0,124,137,.08);
+  border: 1px solid var(--nw-info); border-left: 4px solid var(--nw-info);
+  border-radius: 8px; padding: .6rem .8rem; }
+.nw-rag-eyebrow { font-size: .78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .02em; color: var(--nw-info); margin-bottom: .25rem; }
+.nw-rag-body { font-size: .95rem; color: var(--nw-fg); white-space: pre-line; }
+
+/* Botón de redirección a WhatsApp (handoff de canal) */
+.nw-wa-btn { display: inline-flex; align-items: center; gap: .5rem; margin-top: .6rem;
+  min-height: 48px; padding: .6rem 1.1rem; font-size: 1rem; font-weight: 700; color: #fff;
+  background: #25D366; border: 2px solid #1ebe5a; border-radius: 999px; text-decoration: none; }
+.nw-wa-btn svg { width: 20px; height: 20px; }
+.nw-wa-btn:hover { background: #1ebe5a; }
+.nw-wa-btn:focus-visible { outline: 3px solid var(--nw-focus); outline-offset: 2px; }
+
+/* Botón para subir un PDF (adjuntar documento) */
+.nw-filebtn { display: inline-flex; align-items: center; gap: .4rem; margin-top: .6rem;
+  min-height: 44px; padding: .55rem 1rem; font-size: .95rem; font-weight: 700; color: #fff;
+  background: var(--nw-info); border: 2px solid var(--nw-info); border-radius: 999px; cursor: pointer; }
+.nw-filebtn:hover { filter: brightness(.95); }
+.nw-filebtn:focus-within { outline: 3px solid var(--nw-focus); outline-offset: 2px; }
+
+/* ---------------- Módulo de validación facial ---------------- */
+.nw-facial-overlay { position: fixed; inset: 0; z-index: 1700; display: grid; place-items: center;
+  background: rgba(31,31,31,.6); padding: 1rem; }
+.nw-facial-overlay[hidden] { display: none; }
+.nw-facial { width: 100%; max-width: 460px; background: var(--nw-card); border-radius: 14px;
+  border: 2px solid var(--nw-primary); overflow: hidden; }
+.nw-facial-head { display: flex; align-items: center; justify-content: space-between;
+  background: var(--nw-primary); color: #fff; padding: .8rem 1rem; }
+.nw-facial-body { padding: 1rem; }
+.nw-facial-note { font-size: .85rem; color: var(--nw-muted); }
+.nw-cam { position: relative; margin-top: .8rem; aspect-ratio: 4/3; border-radius: 12px;
+  overflow: hidden; background: #15110f; border: 2px solid rgba(31,31,31,.3); display: grid; place-items: center; }
+.nw-cam-oval { width: 130px; height: 168px; border: 3px solid rgba(255,255,255,.4);
+  border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%; display: grid; place-items: center; color: rgba(255,255,255,.7); }
+.nw-cam-oval svg { width: 84px; height: 84px; }
+.nw-cam.positioning .nw-cam-oval { border-color: var(--nw-warning); }
+.nw-cam.detected .nw-cam-oval, .nw-cam.liveness .nw-cam-oval { border-color: var(--nw-audio); }
+.nw-cam.success .nw-cam-oval { border-color: var(--nw-audio); }
+.nw-cam.failed .nw-cam-oval { border-color: var(--nw-danger); }
+.nw-cam-tag { position: absolute; left: 10px; top: 10px; background: rgba(31,31,31,.75); color: #fff;
+  padding: .2rem .5rem; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+.nw-scan { position: absolute; left: 18px; right: 18px; top: 0; height: 2px; background: var(--nw-audio);
+  box-shadow: 0 0 16px var(--nw-audio); animation: nw-scan 2.2s linear infinite; }
+.nw-pulse svg { animation: nw-pulse 1.6s ease-in-out infinite; }
+.nw-facial-instr { margin-top: .9rem; font-size: 1.05rem; font-weight: 600; }
+.nw-facial-actions { margin-top: .9rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+.nw-facial-actions .nw-opt { font-size: .9rem; }
+.nw-pin { width: 8rem; text-align: center; font-size: 1.6rem; font-weight: 800; letter-spacing: .4em;
+  padding: .5rem; border: 2px solid var(--nw-border); border-radius: 8px; }
+
+/* ---------------- Animaciones ---------------- */
+@keyframes nw-pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .85; } }
+@keyframes nw-scan { 0% { transform: translateY(0); } 100% { transform: translateY(340px); } }
+@keyframes nw-typing { 0%,80%,100% { transform: scale(.6); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
+
+/* ---------------- Tamaños por pantalla ---------------- */
+/* Móvil: pantalla completa */
+@media (max-width: 767px) {
+  .nw-panel { right: 0; bottom: 0; top: 0; left: 0; width: 100vw; height: 100vh; max-height: 100vh;
+    border-radius: 0; border: none; }
+  .nw-fab .nw-fab-texto { display: none; }
+}
+/* Tablet 768–1199: base 420 x 620 (definido arriba) */
+/* Desktop 1200–1599 */
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .nw-panel { width: 460px; height: 680px; }
+}
+/* Desktop grande 1600+ */
+@media (min-width: 1600px) {
+  .nw-panel { width: 500px; height: 720px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nw-typing .dot, .nw-scan, .nw-pulse svg { animation: none !important; }
+}

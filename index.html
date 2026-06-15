@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ñawi — Ventanilla Digital Accesible · Gobierno Regional de Cusco</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="chat.css" />
+</head>
+<body>
+
+  <a href="#contenido-principal" class="skip-link">Ir al contenido principal</a>
+
+  <header role="banner">
+    <div class="header-inner">
+      <span class="logo-text">Ñawi</span>
+      <p class="header-subtitle">Gobierno Regional de Cusco</p>
+    </div>
+  </header>
+
+  <main id="contenido-principal" role="main">
+
+    <section class="hero" aria-labelledby="titulo-hero">
+      <h1 id="titulo-hero">Tu ventanilla sin barreras</h1>
+      <p class="hero-desc">
+        Ñawi es el asistente digital accesible del Gobierno Regional de Cusco. Te ayuda a
+        consultar requisitos, iniciar trámites y revisar el estado de tu expediente — por
+        chat, WhatsApp o llamada, con guía de voz y en español o quechua.
+      </p>
+    </section>
+
+    <section class="tarjetas" aria-label="Accesos rápidos">
+      <article class="tarjeta">
+        <h2>Consultar requisitos</h2>
+        <p>Conoce qué documentos, costos y plazos necesita un trámite del GORE Cusco.</p>
+        <button type="button" class="boton boton-primario"
+          aria-label="Consultar requisitos en el chat con Ñawi"
+          onclick="window.NawiOpenChat && window.NawiOpenChat(this)">Consultar requisitos</button>
+      </article>
+
+      <article class="tarjeta">
+        <h2>Ver mis trámites</h2>
+        <p>Revisa el estado de tu expediente y qué sigue, sin acudir a la oficina.</p>
+        <button type="button" class="boton boton-primario"
+          aria-label="Ver mis trámites en el chat con Ñawi"
+          onclick="window.NawiOpenChat && window.NawiOpenChat(this)">Ver mis trámites</button>
+      </article>
+
+      <article class="tarjeta">
+        <h2>Información</h2>
+        <p>Conoce qué es Ñawi y cómo puede ayudarte. Pregunta lo que necesites.</p>
+        <button type="button" class="boton boton-primario"
+          aria-label="Abrir el chat con Ñawi para más información"
+          onclick="window.NawiOpenChat && window.NawiOpenChat(this)">Más información</button>
+      </article>
+    </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <h2>Mesa de Partes — Gobierno Regional de Cusco</h2>
+    <p>Teléfono: <a href="tel:+5184000000">(084) 000-0000</a></p>
+    <p>Horario de atención: lunes a viernes, de 8:00 a.m. a 4:30 p.m.</p>
+    <p>
+      Esta plataforma cumple con los estándares de accesibilidad
+      <abbr title="Web Content Accessibility Guidelines versión 2.2">WCAG 2.2</abbr> nivel AA.
+    </p>
+  </footer>
+
+  <!-- El botón flotante y el widget de chat se inyectan desde chat-widget.js -->
+  <script src="nawi-data.js"></script>
+  <script src="nawi-intents.js"></script>
+  <script src="nawi-engine.js"></script>
+  <script src="chat-widget.js"></script>
+</body>
+</html>
