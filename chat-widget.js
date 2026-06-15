@@ -79,7 +79,7 @@
 
   // TTS del navegador (Web Speech API).
   function webSpeak(text, onEnd) {
-    if (!caps.tts) { if (onEnd) onEnd(); return; }
+    if (!caps.tts) { isSpeaking = false; updateTyping(); if (onEnd) onEnd(); return; }
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
@@ -88,7 +88,7 @@
       u.onend = () => { isSpeaking = false; updateTyping(); if (onEnd) onEnd(); };
       u.onerror = () => { isSpeaking = false; updateTyping(); if (onEnd) onEnd(); };
       window.speechSynthesis.speak(u);
-    } catch (e) { if (onEnd) onEnd(); }
+    } catch (e) { isSpeaking = false; updateTyping(); if (onEnd) onEnd(); }
   }
 
   // TTS preferente: si voiceMode está activo, usa el backend (ElevenLabs); si el backend
@@ -103,6 +103,9 @@
     // desactivar el backend de voz por una interrupción (que no es un fallo real).
     const seq = ++playSeq;
     if (currentAudio) { try { currentAudio.pause(); } catch (e) {} } // calla de inmediato lo que sonaba
+    // Marcamos "hablando" YA (sin esperar a que cargue el audio del backend) para bloquear la
+    // escritura desde el instante en que decidimos hablar y evitar que el usuario escriba encima.
+    if (caps.tts) { isSpeaking = true; updateTyping(); }
     if (backendTtsDown) { webSpeak(text, onEnd); return; }
     fetch(BACKEND_URL + "/api/tts", {
       method: "POST",
@@ -576,8 +579,8 @@
       }
     });
   }
-  function pauseAudio(turn) { pauseSpeak(); audioState = "paused"; fillAudioBar(turn.id); }
-  function resumeAudio(turn) { resumeSpeak(); audioState = "playing"; fillAudioBar(turn.id); }
+  function pauseAudio(turn) { pauseSpeak(); audioState = "paused"; isSpeaking = false; updateTyping(); fillAudioBar(turn.id); }
+  function resumeAudio(turn) { resumeSpeak(); audioState = "playing"; isSpeaking = true; updateTyping(); fillAudioBar(turn.id); }
   function stopAudio(turn) { stopSpeak(); playedTurns[turn.id] = true; audioTurnId = null; audioState = "idle"; fillAudioBar(turn.id); }
   function audioBtn(label, icon, fn) {
     const b = document.createElement("button");
@@ -684,7 +687,16 @@
     inputEl.setAttribute("placeholder", "Escribe o usa la voz…");
 
     if (!auto) {
-      // Manual: textarea y micrófono presionable siempre disponibles.
+      // Manual: mientras Ñawi habla, bloqueamos brevemente la escritura para que el usuario
+      // no escriba encima del audio (puede detenerlo con "Detener" en la propia burbuja).
+      if (isSpeaking) {
+        inputEl.style.display = ""; inputEl.disabled = true;
+        inputEl.setAttribute("placeholder", "Ñawi está hablando…");
+        micBtn.style.display = "none"; sendBtn.style.display = "none";
+        setVoiceStatus("Ñawi está hablando…");
+        return;
+      }
+      // Turno del usuario: textarea y micrófono presionable disponibles.
       inputEl.style.display = ""; inputEl.disabled = false;
       micBtn.style.display = ""; micBtn.disabled = !caps.sr; micBtn.classList.remove("indicator");
       sendBtn.style.display = "";
