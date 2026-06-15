@@ -196,6 +196,14 @@
   background: var(--nw-primary); color: #fff; padding: .8rem 1rem; }
 .nw-facial-body { padding: 1rem; }
 .nw-facial-note { font-size: .85rem; color: var(--nw-muted); }
+
+/* Maqueta de atención por llamada (IVR) */
+.nw-call-log { display: flex; flex-direction: column; gap: .4rem; margin: .8rem 0; max-height: 48vh; overflow-y: auto; }
+.nw-call-row { padding: .5rem .75rem; border-radius: 12px; font-size: .95rem; max-width: 92%; line-height: 1.35; }
+.nw-call-row.nawi { align-self: flex-start; background: var(--nw-secondary); color: var(--nw-fg); }
+.nw-call-row.user { align-self: flex-end; background: var(--nw-primary); color: #fff; }
+.nw-call-row.sys { align-self: center; text-align: center; font-weight: 600; font-size: .85rem;
+  color: var(--nw-info); background: rgba(0,124,137,.1); border-radius: 8px; }
 .nw-cam { position: relative; margin-top: .8rem; aspect-ratio: 4/3; border-radius: 12px;
   overflow: hidden; background: #15110f; border: 2px solid rgba(31,31,31,.3); display: grid; place-items: center; }
 .nw-cam-oval { width: 130px; height: 168px; border: 3px solid rgba(255,255,255,.4);

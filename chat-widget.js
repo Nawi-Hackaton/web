@@ -48,9 +48,9 @@
     recognition.continuous = false;
     recognition.maxAlternatives = 1;
   }
-  // URL del backend. En local usa localhost; desplegado usa la URL de tu backend (Koyeb).
-  // >>> Al desplegar, reemplaza PROD_BACKEND por la URL de tu backend en Koyeb. <<<
-  const PROD_BACKEND = "https://REEMPLAZA-CON-TU-BACKEND.koyeb.app";
+  // URL del backend. En local usa localhost; desplegado usa la URL pública de tu backend.
+  // >>> Al desplegar, reemplaza PROD_BACKEND por tu dominio (ej. https://nawi-gore.duckdns.org). <<<
+  const PROD_BACKEND = "https://REEMPLAZA-CON-TU-BACKEND";
   const _esLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:");
   const BACKEND_URL = _esLocal ? "http://localhost:8000" : PROD_BACKEND;
   // Número de WhatsApp de Ñawi para el botón "click to chat" (E.164 sin "+"). El frontend es
@@ -965,7 +965,78 @@
     document.addEventListener("click", (e) => { if (menuOpen && !wrap.contains(e.target)) { menuOpen = false; contactEl.hidden = true; fabEl.setAttribute("aria-expanded", "false"); } });
     wrap.querySelector("#nw-c-chat").addEventListener("click", () => { menuOpen = false; openChat(fabEl, "web"); });
     wrap.querySelector("#nw-c-wa").addEventListener("click", () => { menuOpen = false; openChat(fabEl, "whatsapp"); });
-    wrap.querySelector("#nw-c-call").addEventListener("click", () => { window.location.href = "tel:+5184000000"; });
+    wrap.querySelector("#nw-c-call").addEventListener("click", () => { menuOpen = false; contactEl.hidden = true; openCall(); });
+  }
+
+  // ---------------- Maqueta de atención por llamada (IVR) ----------------
+  // Esta función NO está incluida en la demo; aquí se simula cómo sería el flujo final,
+  // reutilizando el mismo motor de Ñawi (igual idea que la validación facial maqueta).
+  let callOverlay = null;
+  let callTimers = [];
+  const CALL_SCRIPT = [
+    { who: "sys", text: "Llamas al número de Ñawi: (084) 000-000." },
+    { who: "nawi", text: "Bienvenido a Ñawi, del Gobierno Regional de Cusco. Te atiendo por voz." },
+    { who: "nawi", text: "¿En qué idioma prefieres continuar, español o quechua?" },
+    { who: "user", text: "(Respondes por voz: español.)" },
+    { who: "nawi", text: "Para validar tu identidad, di tu número de DNI después del tono." },
+    { who: "user", text: "(Dices tu DNI; Ñawi lo transcribe con reconocimiento de voz.)" },
+    { who: "nawi", text: "Te envié un código por mensaje. Tecléalo en tu teléfono para confirmar." },
+    { who: "user", text: "(Tecleas el código de un solo uso en el teclado del teléfono.)" },
+    { who: "nawi", text: "Identidad validada. ¿Qué deseas hacer? Di: requisitos, iniciar trámite, o estado de mi expediente." },
+    { who: "sys", text: "A partir de aquí, el flujo es el mismo que en WhatsApp y la web." },
+  ];
+
+  function buildCall() {
+    callOverlay = document.createElement("div");
+    callOverlay.className = "nw-facial-overlay"; callOverlay.hidden = true;
+    callOverlay.innerHTML =
+      '<div class="nw-facial" role="dialog" aria-modal="true" aria-label="Atención por llamada (maqueta)">' +
+      '<div class="nw-facial-head"><strong>Atención por llamada · maqueta</strong>' +
+      '<button type="button" class="nw-iconbtn" id="nw-call-close" aria-label="Cerrar">' + ICON.close + '</button></div>' +
+      '<div class="nw-facial-body" id="nw-call-body"></div></div>';
+    document.body.appendChild(callOverlay);
+    callOverlay.querySelector("#nw-call-close").addEventListener("click", closeCall);
+  }
+  function closeCall() {
+    if (callOverlay) callOverlay.hidden = true;
+    callTimers.forEach((t) => clearTimeout(t)); callTimers = [];
+    try { stopSpeak(); } catch (e) {}
+  }
+  function openCall() {
+    if (!callOverlay) buildCall();
+    callTimers.forEach((t) => clearTimeout(t)); callTimers = [];
+    callOverlay.hidden = false;
+    const body = callOverlay.querySelector("#nw-call-body");
+    body.innerHTML = "";
+    const note = document.createElement("p");
+    note.className = "nw-facial-note";
+    note.textContent = "La atención por llamada (IVR) no está incluida en esta demostración. " +
+      "Aquí ves cómo sería el flujo final, accesible y 100% por voz, reutilizando el mismo motor de Ñawi.";
+    body.appendChild(note);
+    const log = document.createElement("div");
+    log.className = "nw-call-log"; body.appendChild(log);
+    const playBtn = document.createElement("button");
+    playBtn.type = "button"; playBtn.className = "nw-opt primary";
+    playBtn.textContent = "Reproducir simulación";
+    playBtn.addEventListener("click", () => { primeAudio(); playBtn.disabled = true; callPlay(log, 0); });
+    body.appendChild(playBtn);
+  }
+  function callPlay(log, i) {
+    if (i === 0) log.innerHTML = "";
+    if (i >= CALL_SCRIPT.length) return;
+    const step = CALL_SCRIPT[i];
+    const row = document.createElement("div");
+    row.className = "nw-call-row " + step.who;
+    const quien = step.who === "nawi" ? "Ñawi: " : step.who === "user" ? "Ciudadano: " : "";
+    row.textContent = quien + step.text;
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+    if (step.who === "nawi") {
+      // Lee en voz la línea de Ñawi y avanza recién cuando termina de hablar.
+      playText(step.text, () => { callTimers.push(setTimeout(() => callPlay(log, i + 1), 350)); });
+    } else {
+      callTimers.push(setTimeout(() => callPlay(log, i + 1), 1300));
+    }
   }
 
   function buildFacial() {
