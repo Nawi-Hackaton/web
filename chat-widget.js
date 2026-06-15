@@ -50,7 +50,7 @@
   }
   // URL del backend. En local usa localhost; desplegado usa la URL pública de tu backend.
   // >>> Al desplegar, reemplaza PROD_BACKEND por tu dominio (ej. https://nawi-gore.duckdns.org). <<<
-  const PROD_BACKEND = "https://nawi-hackaton.vercel.app";
+  const PROD_BACKEND = "https://nawi-gore.duckdns.org";
   const _esLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:");
   const BACKEND_URL = _esLocal ? "http://localhost:8000" : PROD_BACKEND;
   // Número de WhatsApp de Ñawi para el botón "click to chat" (E.164 sin "+"). El frontend es
